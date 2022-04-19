@@ -1,0 +1,17 @@
+# 项目路径
+project_path="/data/sh/k8s_install"
+
+# 配置 ssh 端口，远程执行命令需要，置空则使用默认值: 22
+ssh_port=""
+
+# 配置需要安装的 docker 版本, 格式为: -x.x.x, 置空则使用默认值: -20.10.6
+docker_version=""
+
+# 配置需要安装的 kubeadm 版本, 格式为: -x.x.x, 置空则使用默认值: -1.23.5
+kubeadm_verison=""
+
+# 以下为项目依赖变量，不建议修改
+deploy_file="../conf/k8s_deploy_list"
+image_file="../tmp/image_list"
+kubeadm_init_file="../tmp/kubeadm_init"
+kubeadm_init_conf="../conf/kubeadm_init"

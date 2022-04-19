@@ -1,0 +1,4 @@
+# 此文件自定义 kubeadm init 命令
+# 示例：kubeadm init --control-plane-endpoint=<vip> --service-cidr=10.200.0.0/16 --pod-network-cidr=10.201.0.0/16 --upload-certs
+# 不配置则按默认 kubeadm init 直接执行
+kubeadm init
