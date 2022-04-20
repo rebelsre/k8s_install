@@ -16,7 +16,7 @@ function avoid_mistouch() { # 防误触
     esac
 }
 
-function ssh_key_copy() { # SSH 互信
+function ssh_key_copy() { # SSH 互信（这个模块暂未引入使用，如需使用，请先自测）
     local pub_file="~/.ssh/id_rsa.pub"
     read -p "为了方便部署，现在会先配置集群服务器免密访问，期间可能需要输入服务器密码。（确认选 Y，跳过选 N）" ssh_key_copy
     case ${ssh_key_copy} in
@@ -42,12 +42,12 @@ function ssh_key_copy() { # SSH 互信
 function copy_project() { # 分发项目文件到集群服务器
     for ip in $(cat ${deploy_file} | grep -v "#" | grep -v "localhost" | awk -F, '{print $1}')
     do
-        scp -r -P ${ssh_port:-"22"} ${project_path} ${ip}:${project_path%/*}/
+        ssh -p ${ssh_port:-"22"} ${ip} "mkdir -p ${project_path%/*}" # ${ssh_port:-"22"} 指如果不配置 ssh_port 变量则使用 22 作为默认变量
+        scp -r -P ${ssh_port:-"22"} ${project_path} ${ip}:${project_path%/*}/ # ${project_path%/*} 指裁切变量，例如：裁切前：/data/sh/k8s_install，裁切后：/data/sh
     done
 }
 
-
-function remote_install() { # 远程到集群服务器安装 k8s_install.sh 脚本
+function remote_install() { # 远程到集群服务器执行 k8s_install.sh 脚本
     for ip in $(cat ${deploy_file} | grep -v "#" | awk -F, '{print $1}')
     do
         ssh -p ${ssh_port:-"22"} ${ip} "cd ${project_path}/script && /bin/bash k8s_install.sh"
@@ -115,17 +115,24 @@ function check_selinux() { # 检查 SELinux
 }
 
 function check_iptables() { # 检查防火墙
+    local control_ip=$(cat ${kubeadm_init_conf} | grep -v "#" | grep -Po "(?<=--control-plane-endpoint=)[^\s]*") # 获取 kubeadm_init 命令中 --control-plane-endpoint= 配置的 IP
     if [[ $(ps -ef | grep -v grep | grep firewalld | wc -l) -gt 0 ]] ; then
         for ip in $(cat ${deploy_file} | grep -v "#" | cut -d, -f1)
         do
             firewall-cmd --permanent --zone=trusted --add-source=${ip}
         done
+        if [[ "${control_ip}" ]] ; then
+            firewall-cmd --permanent --zone=trusted --add-source=${control_ip}
+        fi
         echolog "firewalld 已经临时开放集群 IP"
     else
         for ip in $(cat ${deploy_file} | grep -v "#" | cut -d, -f1)
         do
             iptables -A INPUT -s ${ip}/32 -j ACCEPT
         done
+        if [[ "${control_ip}" ]] ; then
+            iptables -A INPUT -s ${control_ip}/32 -j ACCEPT
+        fi
         echolog "iptables 已经临时开放集群 IP"
     fi
 }
@@ -265,9 +272,7 @@ function node_join() { # 添加 k8s 节点
     for master_ip in $(cat ${deploy_file} | grep -v "#" | grep -v "localhost" | grep "master" | cut -d, -f1)
     do
         ssh -p ${ssh_port:-"22"} ${master_ip} "${master_join_command}"
-        ssh -p ${ssh_port:-"22"} ${master_ip} "mkdir -p $HOME/.kube"
-        ssh -p ${ssh_port:-"22"} ${master_ip} "cp -i /etc/kubernetes/admin.conf $HOME/.kube/config"
-        ssh -p ${ssh_port:-"22"} ${master_ip} "chown $(id -u):$(id -g) $HOME/.kube/config"
+        ssh -p ${ssh_port:-"22"} ${master_ip} "mkdir -p $HOME/.kube && cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config"
     done
     for worker_ip in $(cat ${deploy_file} | grep -v "#" | grep "worker" | cut -d, -f1)
     do
@@ -275,7 +280,7 @@ function node_join() { # 添加 k8s 节点
     done
 }
 
-function install_network_module() { # Pod 网络附加组件安装
+function install_network_module() { # Pod 网络附加组件安装（默认使用 weave）
     if kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')" ; then
         echolog "INFO: Pod 网络附加组件安装成功"
     else

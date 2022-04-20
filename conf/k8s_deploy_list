@@ -1,5 +1,5 @@
 # IP,HOSTNAME,ROLES
-# 注：使用 localhost 标识本机，避免后续 join 命令的执行
+# 注：使用 localhost 标识本机，执行 kubeamd init 命令，避免后续 join 命令的执行（不能为 worker 节点）
 192.168.100.1,k8s1,master,localhost
 192.168.100.2,k8s2,master
 192.168.100.3,k8s3,master

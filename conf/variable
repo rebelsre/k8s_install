@@ -1,4 +1,4 @@
-# 项目路径
+# 项目路径，请按实际 k8s_install 目录进行配置，否则会影响后续脚本执行
 project_path="/data/sh/k8s_install"
 
 # 配置 ssh 端口，远程执行命令需要，置空则使用默认值: 22
