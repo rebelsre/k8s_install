@@ -1,0 +1,5 @@
+# 此文件自定义 kubeadm join 命令
+# 示例：--config=../conf/config.yaml
+# 不配置则按 kubeadm init 输出的 kubeadm join 执行
+# 注: 不需要配置完整命令，只需要添加传参即可，会自动将此传参加到 join 命令后面
+# 注：该传参 master 和 worker 节点都会执行

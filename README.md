@@ -16,8 +16,10 @@ cd script
 ```
 .
 ├── conf
+│   ├── config.yaml
 │   ├── k8s_deploy_list
 │   ├── kubeadm_init
+│   ├── kubeadm_join
 │   └── variable
 ├── logs
 │   ├── all_in_one.log
@@ -31,16 +33,20 @@ cd script
 │   └── k8s_install.sh
 └── tmp
     ├── image_list
-    └── kubeamd_init
+    └── kubeadm_init
 ```
 
 ### conf 目录
 配置文件存放目录
 
+- config.yaml
+  - kubeadm 配置文件（可选）
 - k8s_deploy_list
   - K8S 部署结构配置文件
 - kubeadm_init
   - kubeadm init 命令配置文件
+- kubeadm_join
+  - kubeadm join 命令配置文件
 - variable
   - 变量配置文件
 

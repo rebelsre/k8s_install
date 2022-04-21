@@ -267,8 +267,9 @@ function node_join() { # 添加 k8s 节点
     local join_command=$(cat ${kubeadm_init_file} | grep "kubeadm join" | tail -1 | tr -d '\\')
     local cert_command=$(cat ${kubeadm_init_file} | grep "\-\-discovery-token-ca-cert-hash" | tail -1 | tr -d '\\' | tr -d '\t')
     local control_command=$(cat ${kubeadm_init_file} | grep "\-\-control-plane" | tail -1 | tr -d '\\' | tr -d '\t')
-    local master_join_command="${join_command} ${cert_command} ${control_command}" # 拼接 master 节点 join 命令
-    local worker_join_command="${join_command} ${cert_command}" # 拼接 worker 节点 join 命令
+    local join_args=$(cat ${kubeadm_join_conf} | grep -v "#")
+    local master_join_command="${join_command} ${cert_command} ${control_command} ${join_args}" # 拼接 master 节点 join 命令
+    local worker_join_command="${join_command} ${cert_command} ${join_args}" # 拼接 worker 节点 join 命令
     for master_ip in $(cat ${deploy_file} | grep -v "#" | grep -v "localhost" | grep "master" | cut -d, -f1)
     do
         ssh -p ${ssh_port:-"22"} ${master_ip} "${master_join_command}"
