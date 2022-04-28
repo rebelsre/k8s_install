@@ -17,7 +17,7 @@ function all_in_one() {
     avoid_mistouch
     copy_project
     remote_install
-    /bin/bash k8s_deploy.sh
+    /bin/bash +x k8s_deploy.sh
     sleep 10
     kubectl get nodes -o wide
     kubectl get pods --all-namespaces

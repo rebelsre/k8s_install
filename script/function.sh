@@ -160,7 +160,7 @@ function install_docker() { # 安装 docker
         if
             yum install -y yum-utils
             yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-            yum install docker-ce${docker_version:-"-20.10.6"} docker-ce-cli${docker_version:-"-20.10.6"} containerd.io -y
+            yum install docker-ce-${docker_version:-"20.10.6"} docker-ce-cli-${docker_version:-"20.10.6"} containerd.io -y
             mkdir /etc/docker
             cat <<EOF | sudo tee /etc/docker/daemon.json
 {
@@ -192,7 +192,7 @@ po_gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
     if
-        yum install -y kubelet${kubeadm_verison:-"-1.23.5"} kubeadm${kubeadm_verison:-"-1.23.5"} kubectl${kubeadm_verison:-"-1.23.5"} --disableexcludes=kubernetes --nogpgcheck
+        yum install -y kubelet-${kubernetes_version:-"1.23.5"} kubeadm-${kubernetes_version:-"1.23.5"} kubectl-${kubernetes_version:-"1.23.5"} --disableexcludes=kubernetes --nogpgcheck
     then
         systemctl enable --now kubelet
         echolog "INFO: kubeadm、kubelet 和 kubectl 安装成功"
@@ -204,7 +204,7 @@ EOF
 
 function pull_image() { # 拉取镜像
     if
-        kubeadm config images pull --image-repository registry.aliyuncs.com/google_containers
+        kubeadm config images pull --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=${kubernetes_version:-"1.23.5"}
     then
         kubeadm config images list > ${image_file}
         local apiserver_version=$(cat ${image_file} | grep "apiserver" | awk -F ':' '{print $2}')
